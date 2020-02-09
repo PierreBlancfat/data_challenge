@@ -6,25 +6,48 @@ from sklearn.linear_model import SGDClassifier
 from sklearn import svm
 
 
-X = np.genfromtxt('./data/Xtr0_mat100.csv', delimiter=' ')
-Y = np.genfromtxt('./data/Ytr0.csv', delimiter=',')[1:, 1]
+X0 = np.genfromtxt('./data/Xtr0_mat100.csv', delimiter=' ')
+X1 = np.genfromtxt('./data/Xtr1_mat100.csv', delimiter=' ')
+X2 = np.genfromtxt('./data/Xtr2_mat100.csv', delimiter=' ')
 
-test = np.genfromtxt('./data/Xtr1_mat100.csv', delimiter=' ')
-truth = np.genfromtxt('./data/Ytr1.csv', delimiter=',')[1:, 1]
+Y0 = np.genfromtxt('./data/Ytr0.csv', delimiter=',')[1:, 1]
+Y1 = np.genfromtxt('./data/Ytr1.csv', delimiter=',')[1:, 1]
+Y2 = np.genfromtxt('./data/Ytr2.csv', delimiter=',')[1:, 1]
+
+X =np.concatenate((X0, X1), axis=0)
+test = X2
+Y =np.concatenate((Y0, Y1, Y2))
+
+
+test = np.genfromtxt('./data/Xte0_mat100.csv', delimiter=' ')
+test1 = np.genfromtxt('./data/Xte1_mat100.csv', delimiter=' ')
+test2 = np.genfromtxt('./data/Xte2_mat100.csv', delimiter=' ')
+X =np.concatenate((test0, test1, test2), axis=1)
+
 clf = MLPClassifier(solver='lbfgs',learning_rate="adaptive", alpha=1e-5,hidden_layer_sizes=(1000,500,250,100, 80,80,80,80,80,80,80,80,80,80,80,80,40,20,10,5), random_state=1)
 clf.fit(X,Y)
 
-svn =  svm.SVC(gamma='auto')
-svn.fit(X,Y)
-svn.score(test,truth)
-
-rbf_feature = RBFSampler(gamma=1, random_state=1)
-X_features = rbf_feature.fit_transform(X)
-clf = SGDClassifier(max_iter=5)
-clf.fit(X_features, Y)
-clf.score(test, truth)
+test = np.concatenate((test,test1), axis =1)
+truth = np.concatenate((truth,truth1))
 
 
+def gaussianKernelGramMatrixFull(X1, X2, sigma=0.1):
+    """(Pre)calculates Gram Matrix K"""
+
+    gram_matrix = np.zeros((X1.shape[0], X2.shape[0]))
+    for i, x1 in enumerate(X1):
+        for j, x2 in enumerate(X2):
+            x1 = x1.flatten()
+            x2 = x2.flatten()
+            gram_matrix[i, j] = np.exp(- np.sum( np.power((x1 - x2),2) ) / float( 2*(sigma**2) ) )
+    return gram_matrix
+
+C=0.1
+kernel = gaussianKernelGramMatrixFull(X,X)
+kernel_test = gaussianKernelGramMatrixFull(test,test)
+clf = svm.SVC(C = C, kernel="precomputed")
+model = clf.fit(kernel, Y )
+model.predict(test)
 
 
 def pesagos(x, y, rate, max_it):
@@ -52,5 +75,15 @@ def fit(w, x, y):
             nb_true += 1
     return nb_true/len(x)
  
+
+
+def csv_pred(preds):
+    with open("prediction.csv","w") as f:
+        f.write("Id,Bound\n")
+        i = 0
+        for pred in preds:
+            f.write(str(i)+","+str(int(pred))+"\n")
+            i += 1
+    
 print(fit(pesagos(X,Y,0.01, 10000), test, truth))
 
