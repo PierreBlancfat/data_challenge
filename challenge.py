@@ -15,21 +15,19 @@ Y1 = np.genfromtxt('./data/Ytr1.csv', delimiter=',')[1:, 1]
 Y2 = np.genfromtxt('./data/Ytr2.csv', delimiter=',')[1:, 1]
 
 X =np.concatenate((X0, X1), axis=0)
-test = X2
-Y =np.concatenate((Y0, Y1, Y2))
+Y =np.concatenate((Y0, Y1))
+
+val_X = X2
+val_Y = Y2
 
 
-test = np.genfromtxt('./data/Xte0_mat100.csv', delimiter=' ')
+
+test0 = np.genfromtxt('./data/Xte0_mat100.csv', delimiter=' ')
 test1 = np.genfromtxt('./data/Xte1_mat100.csv', delimiter=' ')
 test2 = np.genfromtxt('./data/Xte2_mat100.csv', delimiter=' ')
-X =np.concatenate((test0, test1, test2), axis=1)
+test =np.concatenate((test0, test1, test2), axis=0)
 
-clf = MLPClassifier(solver='lbfgs',learning_rate="adaptive", alpha=1e-5,hidden_layer_sizes=(1000,500,250,100, 80,80,80,80,80,80,80,80,80,80,80,80,40,20,10,5), random_state=1)
-clf.fit(X,Y)
-
-test = np.concatenate((test,test1), axis =1)
-truth = np.concatenate((truth,truth1))
-
+# kernel
 
 def gaussianKernelGramMatrixFull(X1, X2, sigma=0.1):
     """(Pre)calculates Gram Matrix K"""
@@ -42,25 +40,58 @@ def gaussianKernelGramMatrixFull(X1, X2, sigma=0.1):
             gram_matrix[i, j] = np.exp(- np.sum( np.power((x1 - x2),2) ) / float( 2*(sigma**2) ) )
     return gram_matrix
 
-C=0.1
-kernel = gaussianKernelGramMatrixFull(X,X)
-kernel_test = gaussianKernelGramMatrixFull(test,test)
-clf = svm.SVC(C = C, kernel="precomputed")
-model = clf.fit(kernel, Y )
-model.predict(test)
+
+# Library soultion
+# clf = MLPClassifier(solver='lbfgs',learning_rate="adaptive", alpha=1e-5,hidden_layer_sizes=(1000,500,250,100, 80,80,80,80,80,80,80,80,80,80,80,80,40,20,10,5), random_state=1)
+# clf.fit(X,Y)
+
+
+
+
+
+# C=0.1
+# kernel = gaussianKernelGramMatrixFull(X,X)
+# kernel_test = gaussianKernelGramMatrixFull(test,test)
+# clf = svm.SVC(C = C, kernel="precomputed")
+# model = clf.fit(kernel, Y )
+# model.predict(test)
 
 
 def pesagos(x, y, rate, max_it):
     nb_sample = len(x)
     w = np.zeros(len(x[1]))
     step = 0
-    for t in range(0, max_it):
+    for t in range(1, max_it):
         i = np.random.randint(0,nb_sample)
-        if  y[i] * w.dot(x[i]) < 1:
-            w = (1-rate)*w + rate*y[i]*x[i]
+        eta = 1/(rate*t)
+        if  (y[i] * w.dot(x[i])) < 1:
+            w = (1 - eta*rate)*w + (rate*y[i])*x[i]
         else:
-            w = (1-rate)*w
+            w = (1 - eta*rate)*w
     return w
+
+
+
+def kernel_pesagos(x, K, y, rate, max_it):
+    nb_sample = len(x)
+    alpha = np.zeros(X.shape[0])
+    new_alpha = np.zeros(X.shape[0])
+    for t in range(1, max_it):
+        i = np.random.randint(0,nb_sample)
+        for j in range(0, len(x[1]) ):
+            if j != i:
+                new_alpha[j] = alpha[j]
+        sum = 0
+        for j in range(0, X.shape[0]):
+            sum += alpha[j]*y[j]*K[i,j]
+        c = y[i]*(1/rate*t) * sum
+        print(c)
+        if c < 1:
+            new_alpha[i] = alpha[i] + 1
+        else:
+            new_alpha[i] = alpha[i]
+    return new_alpha
+
 
 def fit(w, x, y):
     nb_true = 0
@@ -85,5 +116,6 @@ def csv_pred(preds):
             f.write(str(i)+","+str(int(pred))+"\n")
             i += 1
     
-print(fit(pesagos(X,Y,0.01, 10000), test, truth))
-
+kernel_X = gaussianKernelGramMatrixFull(X,X)
+alpha = kernel_pesagos(X,kernel_X,Y,1000, 10000)
+print(alpha)
