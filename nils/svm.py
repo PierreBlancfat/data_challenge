@@ -24,8 +24,8 @@ class SVM:
 
         h = co.matrix(np.zeros((self.l)))
 
-        A = np.zeros((self.l, self.l))
-        b = np.zeros((self.l))
+        A = np.zeros((2, self.l))
+        b = np.zeros((2))
         for i in range(self.l):
             A[0,i] = 1
         b[0] = 1
@@ -36,6 +36,3 @@ class SVM:
         b = co.matrix(b)
 
         self.A_star = co.solvers.qp(P, q, G, h, A, b)
-
-        
-        
