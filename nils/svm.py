@@ -36,3 +36,6 @@ class SVM:
         b = co.matrix(b)
 
         self.A_star = co.solvers.qp(P, q, G, h, A, b)
+
+        self.solution = np.array(self.A_star['x'])
+
