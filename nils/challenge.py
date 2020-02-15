@@ -162,6 +162,48 @@ def compute_two_spec_mat(X,Pred=[]):
         for i in range(len(X)):
             for j in range(len(Pred)):
                 mat[i,j] = np.dot(X_arr[i], Pred_arr[j])
+        return mat
+
+def compute_n_spec_mat(X,n,Pred=[]):
+    def index(st):
+        st_num = np.empty((n))
+        for i in range(n):
+            if st[i] == 'A':
+                st_num[i] = 0
+            if st[i] == 'C':
+                st_num[i] = 1
+            if st[i] == 'G':
+                st_num[i] = 2
+            if st[i] == 'T':
+                st_num[i] = 3
+        res = 0
+        for i in range(n):
+            res = res * 4 + st_num[i]
+        return int(res)
+
+    if len(Pred) == 0:
+        X_arr = np.zeros((len(X), 4**n))
+        for j in range(len(X)):
+            for i in range(len(X[0]) - n + 1):
+                X_arr[j,index(X[j][i:i+n])] += 1
+        mat = np.empty((len(X), len(X)))
+        for i in range(len(X)):
+            for j in range(len(X)):
+                mat[i,j] = np.dot(X_arr[i], X_arr[j])
+        return mat
+    else:
+        X_arr = np.zeros((len(X), 4**n))
+        Pred_arr = np.zeros((len(Pred), 4**n))
+        for j in range(len(X)):
+            for i in range(len(X[0]) - n + 1):
+                X_arr[j,index(X[j][i:i+n])] += 1
+        for j in range(len(Pred)):
+            for i in range(len(Pred[0]) -n + 1):
+                Pred_arr[j,index(Pred[j][i:i+n])] += 1                
+        mat = np.empty((len(X), len(Pred)))
+        for i in range(len(X)):
+            for j in range(len(Pred)):
+                mat[i,j] = np.dot(X_arr[i], Pred_arr[j])
         return mat        
     
 
@@ -180,14 +222,16 @@ l = len(Xtr0)
 #                 print(str(count / (l * l / 100)) + '% computed')
 #     np.save('one_spectrum_matrix.npy', one_spectrum_matrix)
 
-create_submission()
+#create_submission()
 
-# two_spectrum_matrix = compute_two_spec_mat(Xtr0)
+p = 6
 
-# svm = SVM(two_spectrum_matrix, partial(k_spectrum_kernel,k=2), Xtr0, Ytr0, 1)
-# svm.fit()
+p_spectrum_matrix = compute_n_spec_mat(Xtr0, n=p)
 
-# print('Categorization accuracy: ' + str(svm.categorization_accuracy_on_train()))
+svm = SVM(p_spectrum_matrix, partial(k_spectrum_kernel,k=p), Xtr0, Ytr0, 1)
+svm.fit()
 
-# preds = svm.predict(Xte0, compute_two_spec_mat(Xtr0, Xte0))
+print('With p=' + str(p) + ', Categorization accuracy: ' + str(svm.categorization_accuracy_on_train()))
+
+#preds = svm.predict(Xte0, compute_n_spec_mat(Xtr0, n=p, Pred=Xte0))
 
