@@ -80,14 +80,18 @@ class SVM:
                 correct += 1
         return correct / float(self.l)
     
-    def predict(self, X):
+    def predict(self, X, matrix=[]):
         lenX = len(X)
         Y = np.zeros((lenX))
         for i in range(lenX):
             for j in range(self.l):
-                Y[i] += self.solution[j] * self.Y[j] * self.kernel_function(self.X[j], X[i])
+                if len(matrix) == 0:
+                    Y[i] += self.solution[j] * self.Y[j] * self.kernel_function(self.X[j], X[i])
+                else:
+                    Y[i] += self.solution[j] * self.Y[j] * matrix[j,i]
             Y[i] += self.b
             Y[i] = np.sign(Y[i])
+            print(str(i+1) + ' predictions over ' + str(lenX))
         for i in range(lenX):
             if Y[i] == -1:
                 Y[i] = 0
