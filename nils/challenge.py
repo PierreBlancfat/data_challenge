@@ -11,7 +11,7 @@ Ytr0 = pd.read_csv(data_path + 'Ytr0.csv').values[:,1]
 
 for i in range(len(Ytr0)):
     if Ytr0[i] == 0:
-        Ytr0[i] == -1
+        Ytr0[i] = -1
 
 
 def count_nucl(x):
@@ -54,6 +54,8 @@ else:
                 print(str(count / (l * l / 100)) + '% computed')
     np.save('one_spectrum_matrix.npy', one_spectrum_matrix)
 
-svm = SVM(one_spectrum_matrix, Xtr0, Ytr0, 1)
+svm = SVM(one_spectrum_matrix, one_spectrum_kernel, Xtr0, Ytr0, 1)
 svm.fit()
 
+print('Categorization accuracy: ' + str(svm.categorization_accuracy_on_train()))
+print(svm.predict(Xtr0[0:5]))
