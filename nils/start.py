@@ -24,7 +24,7 @@ def create_submission(p):
     preds = np.hstack((np.array([np.arange(3000)]).T, preds))
 
     np.savetxt(
-        'submission.csv',
+        'Yte.csv',
         preds,
         delimiter=',',
         fmt='%1i',
@@ -84,12 +84,13 @@ def p_spectral_kernel_proj(p, seq):
     return seq_vect
 
 
-create_submission(8)
+create_submission(7)
 
 # p = 3
 # ratio_train_test = 2 / float(3)
 # set_num = 0
-# svm = SVM(partial(p_spectral_kernel_proj,p), 4**p, 1, data_sets[0][set_num], data_sets[1][set_num], data_sets[2][set_num])
+# mu = 1
+# svm = SVM(partial(p_spectral_kernel_proj,p), 4**p, mu, data_sets[0][set_num], data_sets[1][set_num], data_sets[2][set_num])
 # svm.fit(ratio_train_test)
 # if ratio_train_test < 1:
 #     ca = svm.categorization_accuracy()
