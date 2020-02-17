@@ -3,7 +3,7 @@
 #+LATEX_CLASS_OPTIONS: [11pt]
 #+OPTIONS: toc:nil
 #+LATEX_HEADER: \usepackage{svg}
-#+LATEX_HEADER: \usepackage[margin=1.25in,bottom=1.25in]{geometry}
+#+LATEX_HEADER: \usepackage[margin=0.75in,bottom=1.25in]{geometry}
 
 #+LATEX: \newcommand{\set}[2]{\{#1 \mid #2\}}
 #+LATEX: \newcommand{\card}[1]{\lvert#1\rvert}
@@ -58,6 +58,8 @@
   plt.plot(x,ds0, label='Dataset 0')
   plt.plot(x,ds1, label='Dataset 1')
   plt.plot(x,ds2, label='Dataset 2')
+  plt.xlabel('p')
+  plt.ylabel('Categorization accuracy')
   plt.legend()
   plt.savefig('performances.svg')
   return 'performances.svg'
@@ -70,3 +72,15 @@
   Instead of having smoothly growing curves for the 3 datasets, we observe different behaviors,
   some datasets peform better with small values of $p$, like the dataset 1, others for high values of $p$, like the dataset 0.
   Finally, the three different datasets perform bad with $p = 5$. We don't have a good understanding of this phenomenon at this time.
+* Results
+  We made three different submissions, all related to p-spectrum kernels.
+  Below are our public and private scores for the 2-spectrum kernel, the 7-spectrum kernel and the 8-spectrum kernel.
+  | p | Public Score | Private Score |
+  |---+--------------+---------------|
+  | 2 |      0.59400 |       0.59133 |
+  | 7 |      0.63200 |       0.67200 |
+  | 8 |      0.61400 |       0.61200 |
+
+  As we can see, we obtained a great improvement in scores with the 7-spectrum kernel over the 2-spectrum kernel.
+  But unexpectedly, the 8-spectrum kernel performs worse than the 7-spectrum kernel.
+  Moreover, there are great differences between the public and private scores (we gained 11 places on the private leaderboard regarding the public leaderboard).
